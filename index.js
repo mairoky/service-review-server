@@ -25,6 +25,13 @@ async function run() {
         const servicesCollection = client.db('service_review').collection('services');
         const reviewsCollection = client.db('service_review').collection('reviews');
 
+        app.get('/home-services', async (req, res) => {
+            const query = {};
+            const cursor = servicesCollection.find(query).sort({ timestamp: -1 }).limit(3);
+            const services = await cursor.toArray();
+            res.send(services);
+        })
+
         app.get('/services', async (req, res) => {
             const query = {};
             const cursor = servicesCollection.find(query);
@@ -46,6 +53,14 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/reviews', async (req, res) => {
+            const email = req.query.email;
+            const query = { author_email: email };
+            const cursor = reviewsCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        })
+
         app.get('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             // console.log(id);
@@ -59,6 +74,13 @@ async function run() {
             const review = req.body;
             // console.log(review);
             const result = await reviewsCollection.insertOne(review);
+            res.send(result);
+        })
+
+        app.delete('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await reviewsCollection.deleteOne(query);
             res.send(result);
         })
 
